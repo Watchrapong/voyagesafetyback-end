@@ -6,7 +6,7 @@ const user = sequelize.define(
   {
     // attributes
     UserId: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       primaryKey: true
     },
     FirstName: {
