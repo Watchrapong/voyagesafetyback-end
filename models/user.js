@@ -32,6 +32,9 @@ const user = sequelize.define(
     },
     Gender: {
       type: Sequelize.INTEGER,
+    },
+    EstId: {
+      type: Sequelize.INTEGER,
     }
   },
   {

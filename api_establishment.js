@@ -22,12 +22,17 @@ router.get("/establishment/keyword/:keyword", async (req, res) => {
 });
 
 //Get one
-router.get("/establishment/EstId/:EstId", async (req, res) => {
-  const { EstId } = req.params;
+router.get("/detail/:EstId", async (req, res) => {
+  const EstId = req.params.EstId;
   let result = await Establishment.findOne({
-    where: { EstId: { [op.eq]: `${EstId}` } },
+    where: { EstId: EstId },
   });
+  if(result){
   res.json(result);
+  }else{
+    res.json();
+  }
+
 });
 
 //Add
