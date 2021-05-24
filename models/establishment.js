@@ -38,6 +38,9 @@ const Establishment = sequelize.define(
     },
     Lng: {
       type: Sequelize.STRING,
+    },
+    pathImg: {
+      type: Sequelize.STRING,
     }
   },
   {
