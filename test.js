@@ -1,6 +1,4 @@
-const Establishment = require("./models/establishment")
-const user = require("./models/user");
+const bcrypt = require("bcryptjs");
 
-
-let result =  user.findAll();
-console.log(result)
+const pass = bcrypt.hashSync('1111',8)
+console.log(pass)

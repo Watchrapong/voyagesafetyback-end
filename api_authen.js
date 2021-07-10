@@ -3,6 +3,7 @@ const router = express.Router();
 const user = require("./models/user");
 const constants = require("./constant");
 const bcrypt = require("bcryptjs");
+const jwt = require('jsonwebtoken');
 
 router.post("/login", async (req, res) => {
   const { Email, Password } = req.body;
@@ -12,16 +13,14 @@ router.post("/login", async (req, res) => {
   console.log("result Password : " + result.Password);
   if (result != null) {
     if (bcrypt.compareSync(Password, result.Password)) {
+      const token = jwt.sign({result}, 'voyage', { expiresIn: "10h" })
       res.json({
         result: constants.kResultOk,
         message: JSON.stringify({
-          FirstName: result.FirstName,
-          LastName: result.LastName,
-          Email: result.Email,
-          CitizenId: result.CitizenId,
-          Telno: result.Telno,
+          token: token
         }),
       });
+      console.log(token);
     } else {
       res.json({ result: constants.kResultNok, message: "Incorrect password" });
     }

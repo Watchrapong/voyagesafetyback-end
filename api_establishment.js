@@ -21,6 +21,15 @@ router.get("/establishment/keyword/:keyword", async (req, res) => {
   res.json(result);
 });
 
+//Get by category
+router.get("/establishment/category/:category", async (req, res) => {
+  const { category } = req.params;
+  let result = await Establishment.findAll({
+    where: { Name: { [op.like]: `%${keyword}%` } },
+  });
+  res.json(result);
+});
+
 //Get one
 router.get("/detail/:EstId", async (req, res) => {
   const EstId = req.params.EstId;
