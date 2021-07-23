@@ -4,6 +4,7 @@ const user = require("./models/user");
 const constants = require("./constant");
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
+const checkAuthen = require('./middleware/authentication')
 
 router.post("/login", async (req, res) => {
   const { Email, Password } = req.body;
@@ -11,14 +12,15 @@ router.post("/login", async (req, res) => {
   let result = await user.findOne({ where: { Email: Email } });
   console.log("Password : " + Password);
   console.log("result Password : " + result.Password);
+  console.log("**** result : "+bcrypt.compareSync(Password, result.Password))
   if (result != null) {
     if (bcrypt.compareSync(Password, result.Password)) {
       const token = jwt.sign({result}, 'voyage', { expiresIn: "10h" })
       res.json({
         result: constants.kResultOk,
-        message: JSON.stringify({
+        // message: JSON.stringify({
           token: token
-        }),
+        // }),
       });
       console.log(token);
     } else {
@@ -28,6 +30,22 @@ router.post("/login", async (req, res) => {
     res.json({ result: constants.kResultNok, message: "Incorrect username" });
   }
 });
+
+// router.get("/info", async (req, res) => {
+//   const { Email } = req.body;
+//   let result = await user.findOne({ where: { Email: Email } });
+//   res.json({userData :result,error:{}})
+// })
+
+router.get("/info" ,checkAuthen,(req,res)=>{
+  const {userData} = req;
+  if(Object.entries(userData).length !== 0){
+   
+      res.json({userData,error:{}})
+  }else{
+      res.json({userInfo:{},error:{status:404,message:"Not Found"}})
+  }
+})
 
 router.post("/register", async (req, res) => {
   let sdbm = (str) => {
