@@ -25,7 +25,7 @@ router.get("/establishment/keyword/:keyword", async (req, res) => {
 router.get("/establishment/category/:category", async (req, res) => {
   const { category } = req.params;
   let result = await Establishment.findAll({
-    where: { Name: { [op.like]: `%${keyword}%` } },
+    where: { SubCategoryId: { [op.eq]: category } },
   });
   res.json(result);
 });
