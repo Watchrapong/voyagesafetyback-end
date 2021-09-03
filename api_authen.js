@@ -3,23 +3,22 @@ const router = express.Router();
 const user = require("./models/user");
 const constants = require("./constant");
 const bcrypt = require("bcryptjs");
-const jwt = require('jsonwebtoken');
-const checkAuthen = require('./middleware/authentication')
+const jwt = require("jsonwebtoken");
+const formidable = require("formidable");
+const checkAuthen = require("./middleware/authentication");
 
 router.post("/login", async (req, res) => {
   const { Email, Password } = req.body;
 
   let result = await user.findOne({ where: { Email: Email } });
-  console.log("Password : " + Password);
-  console.log("result Password : " + result.Password);
-  console.log("**** result : "+bcrypt.compareSync(Password, result.Password))
   if (result != null) {
     if (bcrypt.compareSync(Password, result.Password)) {
-      const token = jwt.sign({result}, 'voyage', { expiresIn: "10h" })
+      const UserId = result.UserId;
+      const token = jwt.sign({ UserId }, "voyage", { expiresIn: "10h" });
       res.json({
         result: constants.kResultOk,
         // message: JSON.stringify({
-          token: token
+        token: token,
         // }),
       });
       console.log(token);
@@ -31,21 +30,24 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// router.get("/info", async (req, res) => {
-//   const { Email } = req.body;
-//   let result = await user.findOne({ where: { Email: Email } });
-//   res.json({userData :result,error:{}})
-// })
-
-router.get("/info" ,checkAuthen,(req,res)=>{
-  const {userData} = req;
-  if(Object.entries(userData).length !== 0){
-   
-      res.json({userData,error:{}})
-  }else{
-      res.json({userInfo:{},error:{status:404,message:"Not Found"}})
+router.get("/info", checkAuthen, (req, res) => {
+  const { userData } = req;
+  if (Object.entries(userData).length !== 0) {
+    user
+      .findOne({ where: { UserId: userData.UserId } })
+      .then((result) => {
+        res.json({ result, error: {} });
+      })
+      .catch((err) => {
+        res.json({
+          result: {},
+          error: { status: 404, message: "Not Found" },
+        });
+      });
+  } else {
+    res.json({ result: {}, error: { status: 404, message: "Not Found" } });
   }
-})
+});
 
 router.post("/register", async (req, res) => {
   let sdbm = (str) => {
@@ -61,7 +63,6 @@ router.post("/register", async (req, res) => {
     );
   };
   try {
-
     let result = await user.create({
       UserId: Math.abs(sdbm(req.body.Email)),
       FirstName: req.body.FirstName,
@@ -98,5 +99,14 @@ router.put("/update", async (req, res) => {
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
 });
+
+//ResetPassword
+router.put("/resetPassword", async (req, res) => {
+  try {
+
+  }catch (error) {
+    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
+  }
+})
 
 module.exports = router;
