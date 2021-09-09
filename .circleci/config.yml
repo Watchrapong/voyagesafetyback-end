@@ -45,11 +45,6 @@ jobs:
       - run:
           name: revoke ingress rule
           command: aws ec2 revoke-security-group-ingress --region $AWS_REGION --group-id $SG_ID --protocol tcp --port 22 --cidr $PUBLIC_IP/32
-workflows:
-  version: 2
-  build-test-deploy:
-    jobs:
-      - deploy:
 
       
 
