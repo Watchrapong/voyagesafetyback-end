@@ -35,7 +35,7 @@ jobs:
             - "5c:03:56:89:27:59:4a:95:b0:01:0a:de:c7:7b:8b:15"
       - run:
           name: Deploy
-          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$ec2PublicIP "cd voyagesafetyback-end ; git checkout main ; git pull ; chmod +x ./deploy.sh ; ./deploy.sh"
+          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$ec2PublicIP "cd voyagesafetyback-end ; sudo git checkout main ; sudo git pull ; sudo chmod +x ./deploy.sh ; ./deploy.sh"
       - run:
           name: revoke ingress rule
           command: aws ec2 revoke-security-group-ingress --region $AWS_REGION --group-id $SG_ID --protocol tcp --port 22 --cidr $PUBLIC_IP/32
