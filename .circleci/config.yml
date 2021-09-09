@@ -29,19 +29,19 @@ jobs:
       - run:
           name: get PublicIP of EC2 Instance
           command: |
-            echo 'export ec2PublicIP=$(aws ec2 describe-instances --output text --filters 'Name=tag:Name,Values=vonder-me-test' --query 'Reservations[].Instances[].PublicIpAddress[]')' >> $BASH_ENV
+            echo 'export ec2PublicIP=$(aws ec2 describe-instances --output text --filters 'Name=tag:Name,Values=voyage-safety' --query 'Reservations[].Instances[].PublicIpAddress[]')' >> $BASH_ENV
       - add_ssh_keys:
           fingerprints:
-            - "07:9b:80:1a:f1:92:78:d8:c2:ca:78:7e:88:7c:b2:08"
+            - "5c:03:56:89:27:59:4a:95:b0:01:0a:de:c7:7b:8b:15"
       - run:
           name: Deploy
-          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$ec2PublicIP "cd backend-internship ; git checkout develop ; git pull ; rm -rf .env ; touch .env ; echo "DB_CONNECTION=$DB_DEV" >> .env ; 
+          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$ec2PublicIP "cd voyagesafetyback-end ; git checkout main ; git pull ; rm -rf .env ; touch .env ; echo "DB_CONNECTION=$DB_DEV" >> .env ; 
                    echo "Secret_Key=$SK" >> .env ; 
                    echo "AWS_BUCKET_NAME=$AWS_BUCKET_NAME" >> .env ; 
                    echo "S3_AWS_ACCESS_KEY=$S3_AWS_ACCESS_KEY" >> .env ; 
                    echo "AWS_BUCKET_REGION=$AWS_BUCKET_REGION" >> .env ; 
                    echo "S3_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY" >> .env ;
-                   chmod +x ./deploy_dev.sh ; ./deploy_dev.sh"
+                   chmod +x ./deploy.sh ; ./deploy.sh"
       - run:
           name: revoke ingress rule
           command: aws ec2 revoke-security-group-ingress --region $AWS_REGION --group-id $SG_ID --protocol tcp --port 22 --cidr $PUBLIC_IP/32
