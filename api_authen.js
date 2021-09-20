@@ -168,8 +168,6 @@ router.put("/upload", uploader.single("image"), async (req, res) => {
     user.update(fields, {
       where: { UserId: fields.UserId },
     });
-
-    // Create writable stream and specifying file mimetype
     const blobStream = fileUpload.createWriteStream({
       metadata: {
         contentType: req.file.mimetype,
