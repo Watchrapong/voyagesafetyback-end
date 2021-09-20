@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "feisty-tempo-311112",
+  "private_key_id": "004287baff262c79ec0f0c11cdfaf4bc2f2987d6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDI3NX3SzS7KGsZ\nbCqChGwpysHg0yxP4DgXret+RDtrxju33oEcl8SlbQkMiZNKyM7qmY3xqk7BWF4K\nZDXNrs+KpC8h4peXEfg1+j3/rX2vVJ1Z0QfPihAgfBl2+gljtataSXqmAXnVaHw7\nWZf788ah/4bpWvToaL2TXudBe4TSShEMvIGbFaAHrZdyM38DrwrZkOq5PRb01eof\nL6HKVUkjzLsa/kywqTQY6EUx7XfjKIUsMoh6cJyTU2SJTUf76RSg6ROUoFEzoHin\nPzPljKdJYh/yHVrOZ/NIQbMDVJoQ5F4bZrazxsBkL6qji7MwyNbikcENX9E6AYRG\nW9BKLDnbAgMBAAECggEAByVbQgkBIs6KpG+QQdKrWDhkpH2l6Jiu1/cKs4X0k6yM\nbgKg7GKZ3UU4OodKdU3DJBdJie6SgHrcVoQU1CnKK/q+59om+nnNoQilMVmmTGBT\nmMSkVvCFJ7DtOo16sOz74BQ0QNVx8Q96/4imrOY8qCwY2mgEqS5CiTc4BMDRGcL2\n4n0h+9J9d2xI/Bm3M2YISnTGJ1R1TWMSt/gfGClG5R/KklWLDU0ZRT8K9QcQqN6H\n4VP8tuBi8k/zlmMM1oxINCd9oTZ7iq7aotGjdmBXaHN9/HD+I4PGW77TaVTw13Pt\nbOPBQBbor6NkGy/pF5PEk/MYxWk1QqH10IQcGpzUAQKBgQDsA6yz5u5pfFcmdPKs\nzX/yGQnG0h5lv7B1WCZNZ05itLuN2akOWOJ3S1KOy8S0qVmZDBqIecpO4gFTOCIN\nzv7H5KNGfGvUmEBdhLC0wpY4kXaxI9MO5oRScP5kLtlbb7x6pgKT57tJnuoYL8NT\nBzSuKCLtO8XQArlqMDq2cKn8mwKBgQDZ3yQyzuRQfZRGGfGAcs2t1BO2VmNIejRg\niI34hBJsOKdp7E/3qYwK6rt17YBE8OTMttlDnc7mPC1n+LMFyPMGg7MDSCmFjjq6\nO0SCvv6txwWQxvwhP51x2eoZIjp+XeACNbmkFTnV5KQfvD9drl0+Oxpf6fqgXgQf\n3ZqXZ1BrwQKBgFj/VbuNJHAApDhrNyt0Xn/jcy1XBIFn1FmbgO4FO6i68FKgNkCj\nwdosPBh+vFFH3vJ4fvThwCkYzlkcPLMqUCb+j5c/ycWkF/lr1NqE2fLA35oSoT7o\nLBOOak9K30m8i71QJn6xjo1HcIzoTeZcPEBEAE+nD4PN0y84upsbRu5rAoGBAMv4\n6L7Yi1AAAc0PhNWopX7UShAvGIxGPLsTnTbJDyZadAHqx4MqLH4b/J0PWUMx9ELj\n/Mwc9hL+y9PHNnN4Cm5S5klwSc9LtRedXSq6/VxcM42zfWDzWce5KD2XmgOsh4gK\nHF7NsHPbtvwvFXPzRkB4vNyHBakV2+6pXY3Zn6UBAoGATRzjsdGOwxf0xRtcnlI8\n6zRH/XgJnTSgcyS70b7bkMUJnyci7N27Mq3aJ1YxwN9c0ii41wOX5Lej+ayrlzNi\nqkWd9ykkKoCwzD/Qc3hz6DNQKh2/KwxnVxXXFm7q3C2a0VyOvo3Jl9hH/Dq11a76\nJKwSRgFaBGZSqg7serRrckI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-vqu58@feisty-tempo-311112.iam.gserviceaccount.com",
+  "client_id": "107032851553128424797",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-vqu58%40feisty-tempo-311112.iam.gserviceaccount.com"
+}

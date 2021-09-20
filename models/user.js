@@ -35,7 +35,13 @@ const user = sequelize.define(
     },
     EstId: {
       type: Sequelize.INTEGER,
-    }
+    },
+    pathImg: {
+      type: Sequelize.STRING,
+    },
+    Verify: {
+      type: Sequelize.BOOLEAN,
+    },
   },
   {
     sequelize,

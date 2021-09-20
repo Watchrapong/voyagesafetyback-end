@@ -1,4 +1,3 @@
-const bcrypt = require("bcryptjs");
+const send = require('./controller/mailsender')
 
-const pass = bcrypt.hashSync('1111',8)
-console.log(pass)
+send("glaa656@hotmail.co.th", "test")
