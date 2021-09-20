@@ -1,0 +1,44 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: 'cimg/node:14.17.0'
+    steps:
+      - checkout
+      - run:
+          name: install aws cli
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            chmod +x ./aws/install
+            sudo ./aws/install
+      - run:
+          name: aws configue
+          command: |
+            aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+            aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+            aws configure set default.region "$AWS_DEFAULT_REGION"
+            echo 'export PUBLIC_IP=$(curl ipinfo.io/ip)' >> $BASH_ENV
+      - run:
+          name: ingress rule
+          command: aws ec2 authorize-security-group-ingress --region $AWS_REGION --group-id $SG_ID --protocol tcp --port 22 --cidr $PUBLIC_IP/32
+      - run:
+          name: give ingress rule some time to propogate
+          command: sleep 5
+      - run:
+          name: get PublicIP of EC2 Instance
+          command: |
+            echo 'export ec2PublicIP=$(aws ec2 describe-instances --output text --filters 'Name=tag:Name,Values=voyage-safety' --query 'Reservations[].Instances[].PublicIpAddress[]')' >> $BASH_ENV
+      - add_ssh_keys:
+          fingerprints:
+            - "5c:03:56:89:27:59:4a:95:b0:01:0a:de:c7:7b:8b:15"
+      - run:
+          name: Deploy
+          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$ec2PublicIP "cd voyagesafetyback-end ; sudo git checkout main ; sudo git pull ; sudo chmod +x ./deploy.sh ; ./deploy.sh"
+      - run:
+          name: revoke ingress rule
+          command: aws ec2 revoke-security-group-ingress --region $AWS_REGION --group-id $SG_ID --protocol tcp --port 22 --cidr $PUBLIC_IP/32
+
+      
+
