@@ -66,6 +66,7 @@ router.get("/info", checkAuthen, (req, res) => {
         });
       });
   } else {
+    console.log(error);
     res.json({ result: {}, error: { status: 404, message: "Not Found" } });
   }
 });
@@ -194,6 +195,7 @@ router.put("/upload", uploader.single("image"), async (req, res) => {
 
     blobStream.end(req.file.buffer);
   } catch (error) {
+    console.log(error);
     res.status(400).send(`Error, could not upload file: ${error}`);
   }
 });
@@ -216,8 +218,42 @@ router.put("/resetPassword", async (req, res) => {
       });
     });
   } catch (error) {
+    console.log(error);
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
 });
+
+router.post('/testauthen' , async (req, res) => {
+  let sdbm = (str) => {
+    let arr = str.split("");
+    return arr.reduce(
+      (hashCode, currentVal) =>
+        (hashCode =
+          currentVal.charCodeAt(0) +
+          (hashCode << 6) +
+          (hashCode << 16) -
+          hashCode),
+      0
+    );
+  };
+    let UserId = Math.abs(sdbm(req.body.Email))
+    let result = await user.create({
+      UserId: UserId,
+      FirstName: req.body.FirstName,
+      LastName: req.body.LastName,
+      Email: req.body.Email,
+      CitizenId: req.body.CitizenId,
+      Telno: req.body.Telno,
+      Gender: req.body.Gender,
+      Password: bcrypt.hashSync(req.body.Password, 8),
+      Status: false, //check on blockchain
+      Verify: false,
+    });
+    console.log("Success");
+    let key = cryptr.encrypt(UserId);
+    send(req.body.host, req.body.Email, "Verify account", key);
+    res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
+  
+})
 
 module.exports = router;
