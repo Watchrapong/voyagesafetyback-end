@@ -103,6 +103,7 @@ router.post("/register", async (req, res) => {
     res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
   } catch (error) {
     console.log("Fail");
+    console.log(error);
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
 });
