@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 
   function send(link, email, subject, key)  {
   const mailOptions = {
-    from: 'wachrspong@gmail.com',
+    from: 'voyagesafety@gmail.com',
     to: email,
     subject: subject,
     html: verify(link, email, key)
