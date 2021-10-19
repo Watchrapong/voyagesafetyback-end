@@ -8,7 +8,7 @@ const formidable = require("formidable");
 const multer = require("multer");
 const checkAuthen = require("./middleware/authentication");
 const FirebaseApp = require("./filebase_connection");
-const send = require('./controller/mailsender')
+const {sendVerify,sendResetPassword} = require('./controller/mailsender')
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('voyageSafetySecretKey');
 
@@ -100,7 +100,7 @@ router.post("/register", async (req, res) => {
     });
     console.log("Success");
     let key = cryptr.encrypt(UserId);
-    send(req.body.host, req.body.Email, "Verify account", key);
+    sendVerify(req.body.host, req.body.Email, "Verify account", key);
     res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
   } catch (error) {
     console.log("Fail");
@@ -200,7 +200,7 @@ router.put("/upload", uploader.single("image"), async (req, res) => {
   }
 });
 
-router.put("/resetPassword", async (req, res) => {
+router.put("/resetpassword", async (req, res) => {
   try {
     var form = new formidable.IncomingForm();
     form.parse(req, async (err, fields) => {
@@ -223,37 +223,25 @@ router.put("/resetPassword", async (req, res) => {
   }
 });
 
-router.post('/testauthen' , async (req, res) => {
-  let sdbm = (str) => {
-    let arr = str.split("");
-    return arr.reduce(
-      (hashCode, currentVal) =>
-        (hashCode =
-          currentVal.charCodeAt(0) +
-          (hashCode << 6) +
-          (hashCode << 16) -
-          hashCode),
-      0
-    );
-  };
-    let UserId = Math.abs(sdbm(req.body.Email))
-    let result = await user.create({
-      UserId: UserId,
-      FirstName: req.body.FirstName,
-      LastName: req.body.LastName,
-      Email: req.body.Email,
-      CitizenId: req.body.CitizenId,
-      Telno: req.body.Telno,
-      Gender: req.body.Gender,
-      Password: bcrypt.hashSync(req.body.Password, 8),
-      Status: false, //check on blockchain
-      Verify: false,
-    });
-    console.log("Success");
-    let key = cryptr.encrypt(UserId);
-    send(req.body.host, req.body.Email, "Verify account", key);
-    res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
-  
-})
+router.post('/resetpassword', async (req, res) => {
+    let result = await user.findOne({ where: {Email: req.body.Email} });
+    if(!result) {
+      res.json({ result: constants.kResultNok, message: "Result null"});
+    }else{
+      sendResetPassword(req.body.host,req.body.Email, req.body.host)
+      res.json({result: constants.kResultOk});
+    }
+});
+
+router.put('/updatepassword', async (req, res) => {
+  try {
+    let bcryptPass = bcrypt.hashSync(req.body.Password, 8);
+    let result = await user.update({Password: bcryptPass},{ where: {Email: req.body.Email}})
+    res.json({result: constants.kResultOk, message: JSON.stringify(result)})
+  } catch (error) {
+    console.log(error);
+    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
+  }
+});
 
 module.exports = router;
