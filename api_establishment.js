@@ -46,8 +46,10 @@ router.get("/detail/:EstId", async (req, res) => {
   let result = await Establishment.findOne({
     where: { EstId: EstId },
   });
-  if (result) {
-    res.json(result);
+  let arrImg = await image.findAll( {where: { EstId: EstId}} )
+  if (result&& arrImg) {
+    console.log(result);
+    res.json({result, arrImg});
   } else {
     res.json();
   }
