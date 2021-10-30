@@ -30,9 +30,6 @@ const Establishment = sequelize.define(
     PostCode: {
       type: Sequelize.STRING,
     },
-    Owner: {
-      type: Sequelize.STRING,
-      },
     Lat: {
       type: Sequelize.STRING,
     },

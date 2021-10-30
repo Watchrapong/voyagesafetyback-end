@@ -11,6 +11,8 @@ const FirebaseApp = require("./filebase_connection");
 const {sendVerify,sendResetPassword} = require('./controller/mailsender')
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('voyageSafetySecretKey');
+const axios = require("axios");
+const { apiBlockChain, server } = require("./constant");
 
 const uploader = multer({
   storage: multer.memoryStorage(),
@@ -84,6 +86,7 @@ router.post("/register", async (req, res) => {
       0
     );
   };
+  axios.post(`${apiBlockChain}/${server.VACCINATION}/${req.body.CitizenId}`).then(async(response) => {
   try {
     let UserId = Math.abs(sdbm(req.body.Email))
     let result = await user.create({
@@ -95,7 +98,7 @@ router.post("/register", async (req, res) => {
       Telno: req.body.Telno,
       Gender: req.body.Gender,
       Password: bcrypt.hashSync(req.body.Password, 8),
-      Status: false, //check on blockchain
+      Status: response.data.result.haveVaccine, //check on blockchain
       Verify: false,
     });
     console.log("Success");
@@ -107,6 +110,11 @@ router.post("/register", async (req, res) => {
     console.log(error);
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
+}).catch((error) => {
+  console.log("Vaccine Fail");
+    console.log(error);
+    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
+})
 });
 
 //Update
