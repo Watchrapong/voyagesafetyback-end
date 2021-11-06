@@ -1,4 +1,5 @@
 const { QueryTypes } = require("sequelize");
+const Sequelize = require("sequelize");
 const sequelize = require("../db_instance");
 
 findAllStaff = async (EstId) => {
@@ -6,4 +7,40 @@ const staffUser = await sequelize.query(`SELECT E."UserId",E."FirstName",E."Last
 return staffUser;
 }
 
-module.exports = findAllStaff;
+const Staff = sequelize.define(
+    "Staff",
+    {
+      // attributes
+      StaffId: {
+        type: Sequelize.STRING,
+        primaryKey: true,
+      },
+      UserId: {
+        type: Sequelize.STRING,
+      },
+      EstId: {
+        type: Sequelize.STRING,
+      },
+      vaccineName1: {
+        type: Sequelize.STRING,
+      },
+      vaccineName2: {
+        type: Sequelize.STRING,
+      },
+      Position: {
+        type: Sequelize.STRING,
+      },
+    },
+    {
+      sequelize,
+      tableName: "Staff",
+      schema: "Voyage_Safety",
+    }
+  );
+  
+  (async () => {
+    await Staff.sync({ force: false });
+  })();
+  
+
+module.exports = {findAllStaff, Staff};

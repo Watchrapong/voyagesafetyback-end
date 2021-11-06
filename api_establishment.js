@@ -8,7 +8,7 @@ const constants = require("./constant");
 const formidable = require("formidable");
 const multer = require("multer");
 const FirebaseApp = require("./filebase_connection");
-const findAllStaff = require("./models/staff");
+const { findAllStaff, Staff } = require("./models/staff");
 const Owner = require("./models/owner");
 const User = require("./models/user");
 const axios = require("axios");
@@ -53,7 +53,6 @@ router.get("/detail/:EstId", async (req, res) => {
   });
   let arrImg = await image.findAll({ where: { EstId: EstId } });
   if (result && arrImg) {
-    console.log(result);
     res.json({ result, arrImg });
   } else {
     res.json();
@@ -95,18 +94,28 @@ router.post("/establishment", uploader.array("images", 3), async (req, res) => {
       SubCategoryId: req.body.SubCategoryId,
       pathImg: pathImg,
     });
-    axios.post(`${apiBlockChain}/${server.VACCINATION}/${req.body.CitizenId}`).then(async(response) => 
-    {
-      console.log(response.data);
-      let vaccineName1 = response.data.result.vaccineName1;
-      let vaccineName2 = response.data.result.vaccineName2;
-      console.log(vaccineName1);
-      let userId = req.body.Owner;
-    let ownerResult = await Owner.create({ OwnerId: userId, UserId: userId, EstId: EstId, vaccineName1: vaccineName1, vaccineName2: vaccineName2 });
-    console.log("owner success")
-  }).catch(error => {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
-  })
+    axios
+      .post(`${apiBlockChain}/${server.VACCINATION}/${req.body.CitizenId}`)
+      .then(async (response) => {
+        let vaccineName1 = response.data.result.vaccineName1;
+        let vaccineName2 = response.data.result.vaccineName2;
+        console.log(vaccineName1);
+        let userId = req.body.Owner;
+        let ownerResult = await Owner.create({
+          OwnerId: userId,
+          UserId: userId,
+          EstId: EstId,
+          vaccineName1: vaccineName1,
+          vaccineName2: vaccineName2,
+        });
+        console.log("owner success");
+      })
+      .catch((error) => {
+        res.json({
+          result: constants.kResultNok,
+          message: JSON.stringify(error),
+        });
+      });
     for (let i = 0; i < collection.length; i++) {
       const element = collection[i];
       const name = EstId;
@@ -135,34 +144,108 @@ router.post("/establishment", uploader.array("images", 3), async (req, res) => {
   }
 });
 
+//see my Establishment
+router.get('/establishment/owner/:UserId', async (req, res) => {
+  try {
+    const UserId = req.params.UserId;
+  let owner = await Owner.findOne({ where: { UserId }})
+  const EstId = owner.EstId;
+  let result = await Establishment.findOne({
+    where: { EstId: EstId },
+  });
+  let arrImg = await image.findAll({ where: { EstId: EstId } });
+  if (result && arrImg) {
+    res.json({ result, arrImg });
+  } else {
+    res.json();
+  }
+  } catch (error) {
+    res.json();
+  }
+})
+
 //Update
 router.put("/establishment", async (req, res) => {
   try {
-    var form = new formidable.IncomingForm();
-    form.parse(req, async (err, fields, files) => {
-      // let result = await Establishment.update(fields, {where :{EstId: fields.EstId}});
-      // result = await uploadImage(files, fields);
-
-      // res.json({ result: constants.kResultOk,message: JSON.stringify(result)})
-      console.log(fields.image[0]);
-    });
+    // let result = await Establishment.update(, {where :{EstId: req.body.EstId}});
+    // result = await uploadImage(files, fields);
+    // res.json({ result: constants.kResultOk,message: JSON.stringify(result)})
   } catch (error) {
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
 });
 
 router.get("/establishment/staff/:EstId", async (req, res) => {
+  try{
   const { EstId } = req.params;
-  let ownerResult = await Owner.findOne({ where: {EstId: EstId}});
-  let result = await User.findOne({ where: {UserId: ownerResult.UserId}});
+  let owner = await Owner.findOne({ where: { EstId: EstId } });
+  let user = await User.findOne({ where: {UserId: owner.UserId}})
+  axios
+    .post(`${apiBlockChain}/${server.VACCINATION}/${user.CitizenId}`)
+    .then(async (response) => {
+      let data = response.data.result;
+      await Owner.update(
+        { vaccineName1: data.vaccineName1, vaccineName2: data.vaccineName2 },
+        { where: { UserId: owner.UserId } }
+      );
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  let staffUserUpdate = await findAllStaff(EstId);
+  for (let i = 0; i < staffUserUpdate.length; i++) {
+    const element = staffUserUpdate[i];
+    axios
+      .post(`${apiBlockChain}/${server.VACCINATION}/${element.CitizenId}`)
+      .then(async (response) => {
+        let data = response.data.result;
+        await Staff.update(
+          { vaccineName1: data.vaccineName1, vaccineName2: data.vaccineName2 },
+          { where: { UserId: element.UserId } }
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+  let ownerResult = await Owner.findOne({ where: { EstId: EstId } });
+  let result = await User.findOne({ where: { UserId: ownerResult.UserId } });
   let staffUser = await findAllStaff(EstId);
-  res.json({ownerResult,result,staffUser});
+  res.json({ ownerResult, result, staffUser });
+}catch(error){
+res.json({ result: constants.kResultNok, message: "Error" });
+}
 });
 
-router.get("/test" , async (req, res) => {
-  axios.get(`${apiBlockChain}`).then((response) => {
-    res.json(response.data)
-  })
-})
+router.post("/establishment/staff", async (req, res) => {
+  try{
+  const data = req.body;
+  let result = await User.findOne({ where: { CitizenId: data.CitizenId } });
+  let EstId = data.EstId;
+  if (result.Status === true) {
+    axios
+      .post(`${apiBlockChain}/${server.VACCINATION}/${data.CitizenId}`)
+      .then(async (response) => {
+        let dataVaccine = response.data.result;
+        let StaffResult = await Staff.create({
+          StaffId: result.UserId,
+          UserId: result.UserId,
+          EstId: EstId,
+          vaccineName1: dataVaccine.vaccineName1,
+          vaccineName2: dataVaccine.vaccineName2,
+          Position: data.Position,
+        });
+        res.json({
+          result: constants.kResultOk,
+          message: JSON.stringify(StaffResult),
+        });
+      });
+  } else {
+    res.json({ result: constants.kResultNok, message: "novaccine" });
+  }
+}catch (error) {
+  res.json({ result: constants.kResultNok, message: "Error" });
+}
+});
 
 module.exports = router;

@@ -252,4 +252,13 @@ router.put('/updatepassword', async (req, res) => {
   }
 });
 
+router.put('/updatevaccine', async (req, res) => {
+  try {
+    let result = await user.update({Status: true}, {where: { CitizenId: req.body.CitizenId }});
+    res.json({result: constants.kResultOk, message: JSON.stringify(result)})
+  } catch (error) {
+    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
+  }
+})
+
 module.exports = router;
