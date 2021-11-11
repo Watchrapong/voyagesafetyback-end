@@ -6,15 +6,22 @@ const image = sequelize.define(
   {
     // attributes
     ImgId: {
-      type: Sequelize.STRING,
-      primaryKey: true
+      type: Sequelize.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
     },
     EstId: {
         type: Sequelize.STRING,
       },
     Img: {
         type: Sequelize.STRING,
-      },  
+      },
+    mainImage: {
+      type: Sequelize.BOOLEAN,
+    },
+    fileName: {
+      type: Sequelize.STRING,
+    }
   },
   {
     sequelize,
