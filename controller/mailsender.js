@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const {verify,resetPassword} = require('../view/Page');
+const {verify,resetPassword, confirmBooking} = require('../view/Page');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('voyageSafetySecretKey');
 
@@ -27,6 +27,22 @@ const transporter = nodemailer.createTransport({
   });
   }
 
+  function sendConfirmBooking(email,firstName,lastName,Name,date) {
+    const mailOptions = {
+      from: 'voyagesafety@gmail.com',
+      to: email,
+      subject: "ข้อมูลการจอง",
+      html: confirmBooking(firstName,lastName,Name,date)
+    };
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('ConfirmBooking sent: ' + info.response);
+      }
+    });
+  }
+
   function sendResetPassword(link, email )  {
     const key = cryptr.encrypt(email);
     const fulllink = `https://${link}/resetpassword/${key}`;
@@ -45,4 +61,4 @@ const transporter = nodemailer.createTransport({
     });
   }
 
-  module.exports = { sendVerify, sendResetPassword }
+  module.exports = { sendVerify, sendConfirmBooking, sendResetPassword }

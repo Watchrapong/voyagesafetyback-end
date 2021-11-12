@@ -695,7 +695,7 @@ function resetPassword(link, email) {
   ;
 }
 
-function confirmBooking(firstName,lastName,establishmentName,date,time) {
+function confirmBooking(firstName,lastName,Name,date) {
   return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
   
@@ -938,9 +938,8 @@ function confirmBooking(firstName,lastName,establishmentName,date,time) {
                                 <div style="line-height: 160%; text-align: center; word-wrap: break-word;">
                                   <p style="font-size: 14px; line-height: 160%;">การจองคิวของคุณสำเร็จ</p>
                                   <p style="font-size: 14px; line-height: 160%;">ข้อมูลการจองของคุณ ${firstName} ${lastName} คือ</p>
-                                  <p style="font-size: 14px; line-height: 160%;">สถานที่ : ${establishmentName}</p>
+                                  <p style="font-size: 14px; line-height: 160%;">สถานที่ : ${Name}</p>
                                   <p style="font-size: 14px; line-height: 160%;">วันที่ : ${date}</p>
-                                  <p style="font-size: 14px; line-height: 160%;">เวลา : ${time}</p>
                                 </div>
   
                               </td>

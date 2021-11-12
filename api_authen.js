@@ -8,9 +8,13 @@ const formidable = require("formidable");
 const multer = require("multer");
 const checkAuthen = require("./middleware/authentication");
 const FirebaseApp = require("./filebase_connection");
-const {sendVerify,sendResetPassword} = require('./controller/mailsender')
-const Cryptr = require('cryptr');
-const cryptr = new Cryptr('voyageSafetySecretKey');
+const {
+  sendVerify,
+  sendResetPassword,
+  sendConfirmBooking,
+} = require("./controller/mailsender");
+const Cryptr = require("cryptr");
+const cryptr = new Cryptr("voyageSafetySecretKey");
 const axios = require("axios");
 const { apiBlockChain, server } = require("./constant");
 
@@ -46,7 +50,7 @@ router.post("/login", async (req, res) => {
         });
       }
     } else {
-      res.json({ result: constants.kResultNok, message: "Not verify"})
+      res.json({ result: constants.kResultNok, message: "Not verify" });
     }
   } else {
     res.json({ result: constants.kResultNok, message: "Incorrect username" });
@@ -73,6 +77,29 @@ router.get("/info", checkAuthen, (req, res) => {
   }
 });
 
+router.post("/confirmbooking", async (req, res) => {
+  let data = req.body;
+  axios
+    .post(`${apiBlockChain}/${server.VACCINATION}/${data.CitizenId}`)
+    .then( (response) => {
+      var data = response.data;
+      if (data.result.haveVaccine == true) {
+        console.log("Success");
+        sendConfirmBooking(req.body.Email ,req.body.FirstName ,req.body.LastName ,req.body.Name ,req.body.Date);
+        res.json({
+          result: constants.kResultOk
+        });
+      } else {
+        console.log("Fail");
+        console.log(error);
+        res.json({ result: constants.kResultNok, error: error });
+      }
+    })
+    .catch((error) => {
+      res.json({ result: constants.kResultNok, error: error });
+    });
+});
+
 router.post("/register", async (req, res) => {
   let sdbm = (str) => {
     let arr = str.split("");
@@ -86,35 +113,47 @@ router.post("/register", async (req, res) => {
       0
     );
   };
-  axios.post(`${apiBlockChain}/${server.VACCINATION}/${req.body.CitizenId}`).then(async(response) => {
-  try {
-    let UserId = Math.abs(sdbm(req.body.Email))
-    let result = await user.create({
-      UserId: UserId,
-      FirstName: req.body.FirstName,
-      LastName: req.body.LastName,
-      Email: req.body.Email,
-      CitizenId: req.body.CitizenId,
-      Telno: req.body.Telno,
-      Gender: req.body.Gender,
-      Password: bcrypt.hashSync(req.body.Password, 8),
-      Status: response.data.result.haveVaccine, //check on blockchain
-      Verify: false,
+  axios
+    .post(`${apiBlockChain}/${server.VACCINATION}/${req.body.CitizenId}`)
+    .then(async (response) => {
+      try {
+        let UserId = Math.abs(sdbm(req.body.Email));
+        let result = await user.create({
+          UserId: UserId,
+          FirstName: req.body.FirstName,
+          LastName: req.body.LastName,
+          Email: req.body.Email,
+          CitizenId: req.body.CitizenId,
+          Telno: req.body.Telno,
+          Gender: req.body.Gender,
+          Password: bcrypt.hashSync(req.body.Password, 8),
+          Status: response.data.result.haveVaccine, //check on blockchain
+          Verify: false,
+        });
+        console.log("Success");
+        let key = cryptr.encrypt(UserId);
+        sendVerify(req.body.host, req.body.Email, "Verify account", key);
+        res.json({
+          result: constants.kResultOk,
+          message: JSON.stringify(result),
+        });
+      } catch (error) {
+        console.log("Fail");
+        console.log(error);
+        res.json({
+          result: constants.kResultNok,
+          message: JSON.stringify(error),
+        });
+      }
+    })
+    .catch((error) => {
+      console.log("Vaccine Fail");
+      console.log(error);
+      res.json({
+        result: constants.kResultNok,
+        message: JSON.stringify(error),
+      });
     });
-    console.log("Success");
-    let key = cryptr.encrypt(UserId);
-    sendVerify(req.body.host, req.body.Email, "Verify account", key);
-    res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
-  } catch (error) {
-    console.log("Fail");
-    console.log(error);
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
-  }
-}).catch((error) => {
-  console.log("Vaccine Fail");
-    console.log(error);
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
-})
 });
 
 //Update
@@ -231,34 +270,40 @@ router.put("/resetpassword", async (req, res) => {
   }
 });
 
-router.post('/resetpassword', async (req, res) => {
-    let result = await user.findOne({ where: {Email: req.body.Email} });
-    if(!result) {
-      res.json({ result: constants.kResultNok, message: "Result null"});
-    }else{
-      sendResetPassword(req.body.host,req.body.Email, req.body.host)
-      res.json({result: constants.kResultOk});
-    }
+router.post("/resetpassword", async (req, res) => {
+  let result = await user.findOne({ where: { Email: req.body.Email } });
+  if (!result) {
+    res.json({ result: constants.kResultNok, message: "Result null" });
+  } else {
+    sendResetPassword(req.body.host, req.body.Email, req.body.host);
+    res.json({ result: constants.kResultOk });
+  }
 });
 
-router.put('/updatepassword', async (req, res) => {
+router.put("/updatepassword", async (req, res) => {
   try {
     let bcryptPass = bcrypt.hashSync(req.body.Password, 8);
-    let result = await user.update({Password: bcryptPass},{ where: {Email: req.body.Email}})
-    res.json({result: constants.kResultOk, message: JSON.stringify(result)})
+    let result = await user.update(
+      { Password: bcryptPass },
+      { where: { Email: req.body.Email } }
+    );
+    res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
   } catch (error) {
     console.log(error);
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
 });
 
-router.put('/updatevaccine', async (req, res) => {
+router.put("/updatevaccine", async (req, res) => {
   try {
-    let result = await user.update({Status: true}, {where: { CitizenId: req.body.CitizenId }});
-    res.json({result: constants.kResultOk, message: JSON.stringify(result)})
+    let result = await user.update(
+      { Status: true },
+      { where: { CitizenId: req.body.CitizenId } }
+    );
+    res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
   } catch (error) {
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
-})
+});
 
 module.exports = router;
