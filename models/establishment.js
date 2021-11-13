@@ -38,6 +38,9 @@ const Establishment = sequelize.define(
     },
     pathImg: {
       type: Sequelize.STRING,
+    },
+    Percent: {
+      type: Sequelize.DECIMAL,
     }
   },
   {

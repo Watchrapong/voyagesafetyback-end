@@ -7,6 +7,11 @@ const staffUser = await sequelize.query(`SELECT E."UserId",E."FirstName",E."Last
 return staffUser;
 }
 
+countStaff = async (EstId) => {
+  const countStaffVaccines = await sequelize.query(`SELECT (SELECT count("StaffId") from "Voyage_Safety"."Staff" where "EstId"= '${EstId}') as "Total", count("StaffId") as "NotVaccinated" from "Voyage_Safety"."Staff" where "EstId"= '${EstId}' and "vaccineName1" = '';`, { type: QueryTypes.SELECT});
+  return countStaffVaccines;
+}
+
 const Staff = sequelize.define(
     "Staff",
     {
@@ -43,4 +48,4 @@ const Staff = sequelize.define(
   })();
   
 
-module.exports = {findAllStaff, Staff};
+module.exports = {findAllStaff, Staff, countStaff};
