@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const {verify,resetPassword, confirmBooking} = require('../view/Page');
+const {verify, verifySuccess, resetPassword, confirmBooking, PasswordChange, updateProfile} = require('../view/Page');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('voyageSafetySecretKey');
 
@@ -11,11 +11,11 @@ const transporter = nodemailer.createTransport({
     }
   });
 
-  function sendVerify(link, email, subject, key)  {
+  function sendVerify(link, email, key)  {
   const mailOptions = {
     from: 'voyagesafety@gmail.com',
     to: email,
-    subject: subject,
+    subject: "ยืนยันอีเมล",
     html: verify(link, email, key)
   };
   transporter.sendMail(mailOptions, function(error, info){
@@ -25,6 +25,22 @@ const transporter = nodemailer.createTransport({
       console.log('Verify sent: ' + info.response);
     }
   });
+  }
+
+  function sendVerifySuccess(email) {
+    const mailOptions = {
+      from: 'voyagesafety@gmail.com',
+    to: email,
+    subject: "ยืนยันอีเมล",
+    html: verifySuccess(email)
+    };
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Verify sent: ' + info.response);
+      }
+    });
   }
 
   function sendConfirmBooking(email,firstName,lastName,Name,date) {
@@ -49,7 +65,7 @@ const transporter = nodemailer.createTransport({
     const mailOptions = {
       from: 'voyagesafety@gmail.com',
       to: email,
-      subject: "Reset password",
+      subject: "แก้ไขรหัสผ่าน",
       html: resetPassword(fulllink, email)
     };
     transporter.sendMail(mailOptions, function(error, info){
@@ -61,4 +77,36 @@ const transporter = nodemailer.createTransport({
     });
   }
 
-  module.exports = { sendVerify, sendConfirmBooking, sendResetPassword }
+  function sendPasswordChange(email)  {
+    const mailOptions = {
+      from: 'voyagesafety@gmail.com',
+      to: email,
+      subject: "รหัสผ่านได้รับการแก้ไข",
+      html: PasswordChange(email)
+    };
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('password change sent: ' + info.response);
+      }
+    });
+  }
+
+  function sendUpdateProfile(email)  {
+    const mailOptions = {
+      from: 'voyagesafety@gmail.com',
+      to: email,
+      subject: "ข้อมูลส่วนตัวได้รับการแก้ไข",
+      html: updateProfile(email)
+    };
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('update profile sent: ' + info.response);
+      }
+    });
+  }
+
+  module.exports = { sendVerify, sendVerifySuccess, sendConfirmBooking, sendResetPassword, sendPasswordChange, sendUpdateProfile }

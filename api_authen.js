@@ -10,8 +10,11 @@ const checkAuthen = require("./middleware/authentication");
 const FirebaseApp = require("./filebase_connection");
 const {
   sendVerify,
+  sendVerifySuccess,
   sendResetPassword,
   sendConfirmBooking,
+  sendPasswordChange,
+  sendUpdateProfile,
 } = require("./controller/mailsender");
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr("voyageSafetySecretKey");
@@ -36,7 +39,19 @@ router.post("/login", async (req, res) => {
     if (result.Verify == true) {
       if (bcrypt.compareSync(Password, result.Password)) {
         const UserId = result.UserId;
-        const token = jwt.sign({ UserId }, "voyage", { expiresIn: "10h" });
+        const token = jwt.sign({ UserId }, "voyage");
+        axios
+          .post(`${apiBlockChain}/${server.VACCINATION}/${result.CitizenId}`)
+          .then(async (response) => {
+            let data = response.data.result;
+            await user.update(
+              { Status: data.haveVaccine },
+              { where: { UserId: UserId } }
+            );
+          })
+          .catch((error) => {
+            console.error(error);
+          });
         res.json({
           result: constants.kResultOk,
           // message: JSON.stringify({
@@ -81,13 +96,19 @@ router.post("/confirmbooking", async (req, res) => {
   let data = req.body;
   axios
     .post(`${apiBlockChain}/${server.VACCINATION}/${data.CitizenId}`)
-    .then( (response) => {
+    .then((response) => {
       var data = response.data;
       if (data.result.haveVaccine == true) {
         console.log("Success");
-        sendConfirmBooking(req.body.Email ,req.body.FirstName ,req.body.LastName ,req.body.Name ,req.body.Date);
+        sendConfirmBooking(
+          req.body.Email,
+          req.body.FirstName,
+          req.body.LastName,
+          req.body.Name,
+          req.body.Date
+        );
         res.json({
-          result: constants.kResultOk
+          result: constants.kResultOk,
         });
       } else {
         console.log("Fail");
@@ -132,7 +153,7 @@ router.post("/register", async (req, res) => {
         });
         console.log("Success");
         let key = cryptr.encrypt(UserId);
-        sendVerify(req.body.host, req.body.Email, "Verify account", key);
+        sendVerify(req.body.host, req.body.Email, key);
         res.json({
           result: constants.kResultOk,
           message: JSON.stringify(result),
@@ -161,17 +182,54 @@ router.put("/update", async (req, res) => {
   try {
     var form = new formidable.IncomingForm();
     form.parse(req, async (err, fields) => {
-      console.log(fields);
-      let result = await user.update(fields, {
+      // if(err){
+        try {
+          let result = await user.update(fields, {
         where: { UserId: fields.UserId },
       });
+      sendUpdateProfile(fields.Email)
       res.json({
         result: constants.kResultOk,
         message: JSON.stringify(result),
       });
+        } catch (error) {
+          res.json({ result: constants.kResultNok });
+        }
+      
+    // } else{
+    //   res.json({ result: constants.kResultNok });
+    // }
     });
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
+    res.json({ result: constants.kResultNok });
+  }
+});
+
+router.put("/verifyupdate", async (req, res) => {
+  try {
+    var form = new formidable.IncomingForm();
+    form.parse(req, async (err, fields) => {
+      // if(err){
+        try {
+          let result = await user.update(fields, {
+        where: { UserId: fields.UserId },
+      });
+      sendVerifySuccess(fields.Email)
+      res.json({
+        result: constants.kResultOk,
+        message: JSON.stringify(result),
+      });
+        } catch (error) {
+          console.log(error)
+          res.json({ result: constants.kResultNok });
+        }
+      
+    // } else{
+    //   res.json({ result: constants.kResultNok });
+    // }
+    });
+  } catch (error) {
+    res.json({ result: constants.kResultNok });
   }
 });
 
@@ -258,6 +316,7 @@ router.put("/resetpassword", async (req, res) => {
           where: { UserId: fields.UserId },
         }
       );
+      sendPasswordChange(fields.Email);
       res.json({
         //Password: fields
         result: constants.kResultOk,
