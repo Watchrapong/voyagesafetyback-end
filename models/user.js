@@ -1,6 +1,5 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../db_instance");
-const Staff = require("../models/staff");
 
 const user = sequelize.define(
   "User",
