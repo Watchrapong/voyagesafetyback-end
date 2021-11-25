@@ -232,6 +232,8 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
     const { EstId } = req.params;
     let owner = await Owner.findOne({ where: { EstId: EstId } });
     let user = await User.findOne({ where: { UserId: owner.UserId } });
+    let staffUser;
+    let ownerResult
     axios
       .post(`${apiBlockChain}/${server.VACCINATION}/${user.CitizenId}`)
       .then(async (response) => {
@@ -240,6 +242,7 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
           { vaccineName1: data.vaccineName1, vaccineName2: data.vaccineName2 },
           { where: { UserId: owner.UserId } }
         );
+        ownerResult = await Owner.findOne({ where: { EstId: EstId } });
       })
       .catch((err) => {
         console.error(err);
@@ -258,6 +261,7 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
             },
             { where: { UserId: element.UserId } }
           );
+          staffUser = await findAllStaff(EstId);
           //update percent
     let result = await countStaff(EstId);
     let total = parseInt(result[0].Total)+1;
@@ -272,9 +276,7 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
           res.json({ result: constants.kResultNok, message: "Error" });
         });
     }
-    let ownerResult = await Owner.findOne({ where: { EstId: EstId } });
     let result = await User.findOne({ where: { UserId: ownerResult.UserId } });
-    let staffUser = await findAllStaff(EstId);
     res.json({ ownerResult, result, staffUser });
   } catch (error) {
     res.json({ result: constants.kResultNok, message: "Error" });
