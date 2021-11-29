@@ -48,8 +48,7 @@ router.get("/establishment/category/:category", async (req, res) => {
 //Get one
 router.get("/detail/:EstId", async (req, res) => {
   const EstId = req.params.EstId;
-  let result = await Establishment.findOne({ where: { EstId: EstId },
-  });
+  let result = await Establishment.findOne({ where: { EstId: EstId } });
   let arrImg = await image.findAll({ where: { EstId: EstId } });
   let percentageData = await countStaff(EstId);
   if (result && arrImg && percentageData) {
@@ -58,7 +57,7 @@ router.get("/detail/:EstId", async (req, res) => {
     res.json();
   }
 });
- 
+
 //Add
 router.post("/establishment", uploader.array("images", 3), async (req, res) => {
   try {
@@ -208,20 +207,23 @@ router.get("/establishment/owner/:UserId", async (req, res) => {
 router.put("/establishment", async (req, res) => {
   try {
     let data = req.body;
-    let result = await Establishment.update({
-      Name: data.Name,
-      Description: data.Description,
-      Address: data.address,
-      District: data.district,
-      Province: data.province,
-      PostCode: data.postCode,
-      Lat: data.lat,
-      Lng: data.lng,
-      SubCategoryId: data.type,
-    }, {where: { EstId: data.EstId }});
-    res.json({ result: constants.kResultOk,message: JSON.stringify(result)})
+    let result = await Establishment.update(
+      {
+        Name: data.Name,
+        Description: data.Description,
+        Address: data.address,
+        District: data.district,
+        Province: data.province,
+        PostCode: data.postCode,
+        Lat: data.lat,
+        Lng: data.lng,
+        SubCategoryId: data.type,
+      },
+      { where: { EstId: data.EstId } }
+    );
+    res.json({ result: constants.kResultOk, message: JSON.stringify(result) });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.json({ result: constants.kResultNok, message: JSON.stringify(error) });
   }
 });
@@ -231,8 +233,6 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
     const { EstId } = req.params;
     let owner = await Owner.findOne({ where: { EstId: EstId } });
     let user = await User.findOne({ where: { UserId: owner.UserId } });
-    let staffUser;
-    let ownerResult
     axios
       .post(`${apiBlockChain}/${server.VACCINATION}/${user.CitizenId}`)
       .then(async (response) => {
@@ -241,7 +241,6 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
           { vaccineName1: data.vaccineName1, vaccineName2: data.vaccineName2 },
           { where: { UserId: owner.UserId } }
         );
-        ownerResult = await Owner.findOne({ where: { EstId: EstId } });
       })
       .catch((err) => {
         console.error(err);
@@ -260,22 +259,23 @@ router.get("/establishment/staff/:EstId", async (req, res) => {
             },
             { where: { UserId: element.UserId } }
           );
-          staffUser = await findAllStaff(EstId);
           //update percent
-    let result = await countStaff(EstId);
-    let total = parseInt(result[0].Total)+1;
-    let no = parseInt(result[0].NotVaccinated);
-    let yes = total - no;
-    let Percent = yes / total * 100;
-    await Establishment.update({ Percent },{ where: { EstId } })
-    //
+          let result = await countStaff(EstId);
+          let total = parseInt(result[0].Total) + 1;
+          let no = parseInt(result[0].NotVaccinated);
+          let yes = total - no;
+          let Percent = (yes / total) * 100;
+          await Establishment.update({ Percent }, { where: { EstId } });
+          //
         })
         .catch((err) => {
           console.error(err);
           res.json({ result: constants.kResultNok, message: "Error" });
         });
     }
+    let ownerResult = await Owner.findOne({ where: { EstId: EstId } });
     let result = await User.findOne({ where: { UserId: ownerResult.UserId } });
+    let staffUser = await findAllStaff(EstId);
     res.json({ ownerResult, result, staffUser });
   } catch (error) {
     res.json({ result: constants.kResultNok, message: "Error" });
@@ -293,64 +293,77 @@ router.post("/establishment/staff", async (req, res) => {
         .post(`${apiBlockChain}/${server.VACCINATION}/${data.CitizenId}`)
         .then(async (response) => {
           let dataVaccine = response.data.result;
-          let StaffResult ;
-          if(dataVaccine.haveVaccine === true) {
+          let StaffResult;
+          if (dataVaccine.haveVaccine === true) {
             StaffResult = await Staff.create({
-            StaffId: result.UserId,
-            UserId: result.UserId,
-            EstId: EstId,
-            vaccineName1: dataVaccine.vaccineName1,
-            vaccineName2: dataVaccine.vaccineName2,
-            Position: data.Position,
-          });
-          }else{
+              StaffId: result.UserId,
+              UserId: result.UserId,
+              EstId: EstId,
+              vaccineName1: dataVaccine.vaccineName1,
+              vaccineName2: dataVaccine.vaccineName2,
+              Position: data.Position,
+            });
+          } else {
             StaffResult = await Staff.create({
-            StaffId: result.UserId,
-            UserId: result.UserId,
-            EstId: EstId,
-            vaccineName1: "",
-            vaccineName2: "",
-            Position: data.Position,
-          });
+              StaffId: result.UserId,
+              UserId: result.UserId,
+              EstId: EstId,
+              vaccineName1: "",
+              vaccineName2: "",
+              Position: data.Position,
+            });
           }
           //update percent
-          let result = await countStaff(EstId);
-          let total = parseInt(result[0].Total)+1;
-          let no = parseInt(result[0].NotVaccinated);
+          let count = await countStaff(EstId);
+          let total = parseInt(count[0].Total) + 1;
+          let no = parseInt(count[0].NotVaccinated);
           let yes = total - no;
-          let Percent = yes / total * 100;
-          await Establishment.update({ Percent },{ where: { EstId } })
+          let Percent = (yes / total) * 100;
+          await Establishment.update({ Percent }, { where: { EstId } });
           //
           res.json({
             result: constants.kResultOk,
             message: JSON.stringify(StaffResult),
           });
-        }).catch((error) => {
-          res.json({ result: constants.kResultNok, message: "staff aleady!",error });
+        })
+        .catch((error) => {
+          console.error(error)
+          res.json({
+            result: constants.kResultNok,
+            message: "staff aleady!",
+            error,
+          });
         });
     } else {
-      res.json({ result: constants.kResultNok, message: "no user found, is this owner" });
+      res.json({
+        result: constants.kResultNok,
+        message: "no user found, is this owner",
+      });
     }
   } catch (error) {
     res.json({ result: constants.kResultNok, message: error });
   }
 });
 
-router.delete('/establishment/staff/:UserId', async (req, res) => {
+router.delete("/establishment/staff/:UserId", async (req, res) => {
   try {
     let UserId = req.params.UserId;
+    let userEst = await Staff.findOne({ where: { UserId }});
+    let EstId = userEst.EstId;
     await Staff.destroy({ where: { UserId } });
     //update percent
     let result = await countStaff(EstId);
-    let total = parseInt(result[0].Total)+1;
+    let total = parseInt(result[0].Total) + 1;
     let no = parseInt(result[0].NotVaccinated);
     let yes = total - no;
-    let Percent = yes / total * 100;
-    await Establishment.update({ Percent },{ where: { EstId } })
+    let Percent = (yes / total) * 100;
+    await Establishment.update({ Percent }, { where: { EstId } });
     //
+    console.log("run")
     res.json({ result: constants.kResultOk });
   } catch (error) {
-    res.json({ result: constants.kResultNok, message: JSON.stringify(error)})
+    console.log(error)
+    res.json({ result: constants.kResultNok, error: error});
   }
 });
 
@@ -373,17 +386,27 @@ router.put(
       }
       let databaseFileName = newFileName.replace(".jpeg", "");
       const pathImg = `https://firebasestorage.googleapis.com/v0/b/${
-      bucket.name
-    }/o/${folder}%2F${encodeURI(databaseFileName)}_700x350.jpeg?alt=media`;
+        bucket.name
+      }/o/${folder}%2F${encodeURI(databaseFileName)}_700x350.jpeg?alt=media`;
       let result = await image.findAll({ where: { EstId: req.body.EstId } });
-      if(result.length == 0) {
-        await image.create({ EstId: req.body.EstId, Img: pathImg, fileName: databaseFileName, mainImage: true  });
+      if (result.length == 0) {
+        await image.create({
+          EstId: req.body.EstId,
+          Img: pathImg,
+          fileName: databaseFileName,
+          mainImage: true,
+        });
         await Establishment.update(
           { pathImg: pathImg },
           { where: { EstId: req.body.EstId } }
         );
-      }else {
-        await image.create({ EstId: req.body.EstId, Img: pathImg, fileName: databaseFileName, mainImage: false  });
+      } else {
+        await image.create({
+          EstId: req.body.EstId,
+          Img: pathImg,
+          fileName: databaseFileName,
+          mainImage: false,
+        });
       }
       const fileUpload = bucket.file(`${folder}/${newFileName}`);
       const blobStream = fileUpload.createWriteStream({
@@ -435,7 +458,10 @@ router.delete(
             res.json({ result: constants.kResultNok });
           });
       } else {
-        await image.update({ mainImage: true }, { where: { ImgId: replace.ImgId } });
+        await image.update(
+          { mainImage: true },
+          { where: { ImgId: replace.ImgId } }
+        );
         await Establishment.update(
           { pathImg: replace.Img },
           { where: { EstId: EstId } }
@@ -473,8 +499,6 @@ router.delete(
   }
 );
 
-router.delete('/establishment/delete', async (req, res) => {
-
-})
+router.delete("/establishment/delete", async (req, res) => {});
 
 module.exports = router;
