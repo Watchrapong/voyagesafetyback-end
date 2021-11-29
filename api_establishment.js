@@ -328,11 +328,12 @@ router.post("/establishment/staff", async (req, res) => {
         })
         .catch((error) => {
           console.error(error)
-          res.json({
-            result: constants.kResultNok,
-            message: "staff aleady!",
-            error,
-          });
+          // res.json({
+          //   result: constants.kResultNok,
+          //   message: "staff aleady!",
+          //   error,
+          //   response
+          // });
         });
     } else {
       res.json({
