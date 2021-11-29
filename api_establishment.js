@@ -48,8 +48,7 @@ router.get("/establishment/category/:category", async (req, res) => {
 //Get one
 router.get("/detail/:EstId", async (req, res) => {
   const EstId = req.params.EstId;
-  let result = await Establishment.findOne({
-    where: { EstId: EstId },
+  let result = await Establishment.findOne({ where: { EstId: EstId },
   });
   let arrImg = await image.findAll({ where: { EstId: EstId } });
   let percentageData = await countStaff(EstId);
@@ -59,7 +58,7 @@ router.get("/detail/:EstId", async (req, res) => {
     res.json();
   }
 });
-
+ 
 //Add
 router.post("/establishment", uploader.array("images", 3), async (req, res) => {
   try {
@@ -325,7 +324,7 @@ router.post("/establishment/staff", async (req, res) => {
             message: JSON.stringify(StaffResult),
           });
         }).catch((error) => {
-          res.json({ result: constants.kResultNok, message: "staff aleady!" });
+          res.json({ result: constants.kResultNok, message: "staff aleady!",error });
         });
     } else {
       res.json({ result: constants.kResultNok, message: "no user found, is this owner" });
