@@ -328,12 +328,11 @@ router.post("/establishment/staff", async (req, res) => {
         })
         .catch((error) => {
           console.error(error)
-          // res.json({
-          //   result: constants.kResultNok,
-          //   message: "staff aleady!",
-          //   error,
-          //   response
-          // });
+          res.json({
+            result: constants.kResultNok,
+            message: "staff aleady!",
+            error,
+          });
         });
     } else {
       res.json({
@@ -378,8 +377,9 @@ router.put(
       const fileName = data.originalname;
       const contentType = req.file.mimetype;
       let newFileName;
-      if (contentType == "image/jpg") {
+      if ((contentType == "image/jpg" )|| (contentType == "image/jpeg")) {
         newFileName = fileName.replace(".jpg", ".jpeg");
+        newFileName = fileName.replace(".jpeg", ".jpeg");
       } else if (contentType == "image/png") {
         newFileName = fileName.replace(".png", ".jpeg");
       } else if (contentType == "image/gif") {
